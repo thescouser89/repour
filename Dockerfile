@@ -24,6 +24,14 @@ RUN cd / && \
     dnf clean all && \
     echo -ne '\n\tStrictHostKeyChecking no\n\tPreferredAuthentications publickey\n\tIdentityFile /mnt/secrets/repour/repour\n\tControlMaster auto\n\tControlPath /tmp/%r@%h-%p\n\tControlPersist 300\n' >> /etc/ssh/ssh_config
 
+
+# Add extra tls certificates if required
+# Put your extra tls certificates in /mnt/secrets/repour/repour-tls-certs folder
+#
+# Doc: https://www.happyassassin.net/2015/01/14/trusting-additional-cas-in-fedora-rhel-centos-dont-append-to-etcpkitlscertsca-bundle-crt-or-etcpkitlscert-pem/
+RUN if [ -d /mnt/secrets/repour/repour-tls-certs ]; then \
+        cp /mnt/secrets/repour/repour-tls-certs/* /etc/pki/ca-trust/source/anchors/ && update-ca-trust; fi
+
 COPY ["venv/container.txt", "container/pid1.py", "container/au.py", "/home/repour/"]
 RUN pip3 --no-cache-dir install -r container.txt && \
     chmod og+rx *.py && \
