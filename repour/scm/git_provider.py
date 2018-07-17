@@ -278,6 +278,19 @@ def git_provider():
         )
 
     @asyncio.coroutine
+    def set_git_line_ending(dir):
+        """
+        Needed to fix line ending issues when commit done from windows: See NCL-3984
+        https://help.github.com/articles/dealing-with-line-endings/
+        """
+        yield from expect_ok(
+            cmd=["git", "config", "--local", "core.autocrlf", "input"],
+            desc="Could not set core.autocrlf",
+            cwd=dir,
+            print_cmd=True
+        )
+
+    @asyncio.coroutine
     def commit(dir, commit_message, commit_date=None):
 
         if commit_date:
@@ -512,6 +525,7 @@ def git_provider():
         "clone_checkout_ref_auto": clone_checkout_ref_auto,
         "cleanup": cleanup,
         "set_user_name": set_user_name,
+        "set_git_line_ending": set_git_line_ending,
         "set_user_email": set_user_email,
         "commit": commit,
         "rev_parse": rev_parse,

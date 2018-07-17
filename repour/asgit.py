@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 c = config.get_configuration_sync()
 git = git_provider.git_provider()
 
-
 @asyncio.coroutine
 def setup_commiter(expect_ok, repo_dir):
     yield from git["set_user_name"](repo_dir, c.get("scm", {}).get("git", {}).get("user.name", "Repour"))
