@@ -99,8 +99,8 @@ def sync_external_repo(adjustspec, repo_provider, work_dir, configuration):
     internal_repo_url = yield from repo_provider(adjustspec, create=False)
     git_user = configuration.get("git_username")
 
-    yield from git["clone"](work_dir, adjustspec["originRepoUrl"])  # Clone origin
     yield from git["set_git_line_ending"](work_dir)
+    yield from git["clone"](work_dir, adjustspec["originRepoUrl"])  # Clone origin
     yield from git["checkout"](work_dir, adjustspec["ref"])  # Checkout ref
     yield from git["remove_remote"](work_dir, "origin")  # Remove origin remote
     yield from git["add_remote"](work_dir, "origin", asutil.add_username_url(internal_repo_url.readwrite, git_user))  # Add target remote
@@ -141,8 +141,8 @@ def adjust(adjustspec, repo_provider):
         else:
             git_user = c.get("git_username")
 
-            yield from git["clone"](work_dir, asutil.add_username_url(repo_url.readwrite, git_user))  # Clone origin
             yield from git["set_git_line_ending"](work_dir)
+            yield from git["clone"](work_dir, asutil.add_username_url(repo_url.readwrite, git_user))  # Clone origin
             yield from git["checkout"](work_dir, adjustspec["ref"])  # Checkout ref
 
         ### Adjust Phase ###

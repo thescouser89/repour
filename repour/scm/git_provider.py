@@ -284,7 +284,7 @@ def git_provider():
         https://help.github.com/articles/dealing-with-line-endings/
         """
         yield from expect_ok(
-            cmd=["git", "config", "--local", "core.autocrlf", "input"],
+            cmd=["git", "config", "--global", "core.autocrlf", "input"],
             desc="Could not set core.autocrlf",
             cwd=dir,
             print_cmd=True
