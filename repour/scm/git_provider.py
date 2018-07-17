@@ -46,6 +46,7 @@ def git_provider():
 
     @asyncio.coroutine
     def checkout(dir, ref):
+        logger.info("Checking out " + str(ref) + " from path: " + str(dir))
         # Checkout tag or branch or commit-id
         yield from expect_ok(
             cmd=["git", "checkout", ref],

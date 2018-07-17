@@ -68,7 +68,8 @@ class TemporaryDirectory(object):
         return self.name
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        self.loop.create_task(rmtree(self.name, ignore_errors=True, loop=self.loop))
+        # Don't delete for debugging
+        # self.loop.create_task(rmtree(self.name, ignore_errors=True, loop=self.loop))
 
 def _convert_bytes(b, mode):
     if mode == "text":
