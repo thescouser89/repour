@@ -100,6 +100,7 @@ def sync_external_repo(adjustspec, repo_provider, work_dir, configuration):
     git_user = configuration.get("git_username")
 
     yield from git["clone"](work_dir, adjustspec["originRepoUrl"])  # Clone origin
+    yield from asgit.setup_commiter(expect_ok, work_dir)
     yield from check_for_untracked_and_commit(work_dir)
     yield from git["checkout"](work_dir, adjustspec["ref"])  # Checkout ref
     yield from git["remove_remote"](work_dir, "origin")  # Remove origin remote
@@ -155,12 +156,11 @@ def adjust(adjustspec, repo_provider):
             git_user = c.get("git_username")
 
             yield from git["clone"](work_dir, asutil.add_username_url(repo_url.readwrite, git_user))  # Clone origin
+            yield from asgit.setup_commiter(expect_ok, work_dir)
             yield from check_for_untracked_and_commit(work_dir)
             yield from git["checkout"](work_dir, adjustspec["ref"])  # Checkout ref
 
         ### Adjust Phase ###
-        yield from asgit.setup_commiter(expect_ok, work_dir)
-
         for execution_name in executions:
             adjust_provider_config = c.get("adjust", {}).get(execution_name, None)
             if adjust_provider_config is None:
