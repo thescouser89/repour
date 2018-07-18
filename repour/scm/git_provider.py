@@ -299,14 +299,14 @@ def git_provider():
         """
         yield from expect_ok(
             cmd=["git", "rm", "--cached", "-r", "."],
-            desc="Could not rm --cached properly"
+            desc="Could not rm --cached properly",
             cwd=dir,
             print_cmd=True
         )
 
         yield from expect_ok(
             cmd=["git", "reset", "--hard"],
-            desc="Could not reset properly"
+            desc="Could not reset properly",
             cwd=dir,
             print_cmd=True
         )
