@@ -122,8 +122,8 @@ def check_for_untracked_and_commit(work_dir):
     # Solution is to just commit the changes, then this allows us to change branch
     # contains_untracked = yield from git["contains_untracked"](work_dir)
 
-    # if contains_untracked:
-    #     logger.info("Repository contains untracked files. Commiting untracked files (but not pushing!). See NCL-3984")
+    if contains_untracked:
+        logger.info("Repository contains untracked files. Commiting untracked files (but not pushing!). See NCL-3984")
 
     #     temp_branch = "repour_commit_weird_lf_issue_ncl_3984-" + str(uuid.uuid1())
     #     yield from asgit.prepare_new_branch(expect_ok, work_dir, temp_branch)
