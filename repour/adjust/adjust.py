@@ -123,7 +123,9 @@ def check_for_untracked_and_commit(work_dir):
 
     if contains_untracked:
         logger.info("Repository contains untracked files. Commiting untracked files (but not pushing!). See NCL-3984")
-        yield from git["add_all"](work_dir)
+
+        temp_branch = "repour_commit_weird_lf_issue_ncl_3984-" + str(uuid.uuid1())
+        yield from asgit.prepare_new_branch(expect_ok, work_dir, temp_branch)
         yield from git["commit"](work_dir, "Commiting because of diff on cloning")
 
 
