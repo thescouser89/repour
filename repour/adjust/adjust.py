@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import uuid
 
 from . import noop_provider
 from . import pme_provider
