@@ -129,6 +129,20 @@ def git_provider():
             return False
 
     @asyncio.coroutine
+    def contains_untracked(dir):
+        try:
+            # if it returns exit code 1, means git repo has untracked files. Exception thrown.
+            # else it means there are no untracked files
+            yield from expect_ok(
+                cmd=["git", "diff-index", "--quiet", "HEAD"],
+                cwd=dir,
+                desc="Ignore this.",
+            )
+            return False
+        except Exception as e:
+            return True
+
+    @asyncio.coroutine
     def is_tag(dir, ref):
         try:  # TODO improve, its ugly
             yield from expect_ok(
@@ -278,14 +292,21 @@ def git_provider():
         )
 
     @asyncio.coroutine
-    def set_git_line_ending(dir):
+    def reset_to_head(dir):
         """
         Needed to fix line ending issues when commit done from windows: See NCL-3984
-        https://help.github.com/articles/dealing-with-line-endings/
+        https://stackoverflow.com/a/29693353/2907906
         """
         yield from expect_ok(
-            cmd=["git", "config", "--global", "core.autocrlf", "input"],
-            desc="Could not set core.autocrlf",
+            cmd=["git", "rm", "--cached", "-r", "."],
+            desc="Could not rm --cached properly"
+            cwd=dir,
+            print_cmd=True
+        )
+
+        yield from expect_ok(
+            cmd=["git", "reset", "--hard"],
+            desc="Could not reset properly"
             cwd=dir,
             print_cmd=True
         )
@@ -525,7 +546,8 @@ def git_provider():
         "clone_checkout_ref_auto": clone_checkout_ref_auto,
         "cleanup": cleanup,
         "set_user_name": set_user_name,
-        "set_git_line_ending": set_git_line_ending,
+        "reset_to_head": reset_to_head,
+        "contains_untracked": contains_untracked,
         "set_user_email": set_user_email,
         "commit": commit,
         "rev_parse": rev_parse,

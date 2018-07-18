@@ -99,8 +99,8 @@ def sync_external_repo(adjustspec, repo_provider, work_dir, configuration):
     internal_repo_url = yield from repo_provider(adjustspec, create=False)
     git_user = configuration.get("git_username")
 
-    yield from git["set_git_line_ending"](work_dir)
     yield from git["clone"](work_dir, adjustspec["originRepoUrl"])  # Clone origin
+    yield from check_for_untracked_and_reset(work_dir)
     yield from git["checkout"](work_dir, adjustspec["ref"])  # Checkout ref
     yield from git["remove_remote"](work_dir, "origin")  # Remove origin remote
     yield from git["add_remote"](work_dir, "origin", asutil.add_username_url(internal_repo_url.readwrite, git_user))  # Add target remote
@@ -112,6 +112,17 @@ def sync_external_repo(adjustspec, repo_provider, work_dir, configuration):
     # from the target repository. We need to sync tags because we use it to know if we have tags with existing changes or if we
     # need to create tags of format <version>-<sha> if existing tag with name <version> exists after pme changes
     yield from git["fetch_tags"](work_dir)
+
+
+@asyncio.coroutine
+def check_for_untracked_and_reset(work_dir):
+    # This may happen because of CRLF / LF line endings: See NCL-3984
+    contains_untracked = yield from git["contains_untracked"](work_dir)
+
+    if contains_untracked:
+        logger.info("Repository contains untracked files. Resetting head to remove those files. See NCL-3984")
+        yield from git["reset_to_head"](work_dir)
+
 
 @asyncio.coroutine
 def adjust(adjustspec, repo_provider):
@@ -141,8 +152,8 @@ def adjust(adjustspec, repo_provider):
         else:
             git_user = c.get("git_username")
 
-            yield from git["set_git_line_ending"](work_dir)
             yield from git["clone"](work_dir, asutil.add_username_url(repo_url.readwrite, git_user))  # Clone origin
+            yield from check_for_untracked_and_reset(work_dir)
             yield from git["checkout"](work_dir, adjustspec["ref"])  # Checkout ref
 
         ### Adjust Phase ###
