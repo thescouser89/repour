@@ -100,7 +100,7 @@ def sync_external_repo(adjustspec, repo_provider, work_dir, configuration):
     git_user = configuration.get("git_username")
 
     yield from git["clone"](work_dir, adjustspec["originRepoUrl"])  # Clone origin
-    yield from check_for_untracked_and_reset(work_dir)
+    yield from check_for_untracked_and_commit(work_dir)
     yield from git["checkout"](work_dir, adjustspec["ref"])  # Checkout ref
     yield from git["remove_remote"](work_dir, "origin")  # Remove origin remote
     yield from git["add_remote"](work_dir, "origin", asutil.add_username_url(internal_repo_url.readwrite, git_user))  # Add target remote
@@ -115,13 +115,15 @@ def sync_external_repo(adjustspec, repo_provider, work_dir, configuration):
 
 
 @asyncio.coroutine
-def check_for_untracked_and_reset(work_dir):
+def check_for_untracked_and_commit(work_dir):
     # This may happen because of CRLF / LF line endings: See NCL-3984
+    # Solution is to just commit the changes, then this allows us to change branch
     contains_untracked = yield from git["contains_untracked"](work_dir)
 
     if contains_untracked:
-        logger.info("Repository contains untracked files. Resetting head to remove those files. See NCL-3984")
-        yield from git["reset_to_head"](work_dir)
+        logger.info("Repository contains untracked files. Commiting untracked files (but not pushing!). See NCL-3984")
+        yield from git["add_all"](work_dir)
+        yield from git["commit"](work_dir, "Commiting because of diff on cloning")
 
 
 @asyncio.coroutine
@@ -153,7 +155,7 @@ def adjust(adjustspec, repo_provider):
             git_user = c.get("git_username")
 
             yield from git["clone"](work_dir, asutil.add_username_url(repo_url.readwrite, git_user))  # Clone origin
-            yield from check_for_untracked_and_reset(work_dir)
+            yield from check_for_untracked_and_commit(work_dir)
             yield from git["checkout"](work_dir, adjustspec["ref"])  # Checkout ref
 
         ### Adjust Phase ###

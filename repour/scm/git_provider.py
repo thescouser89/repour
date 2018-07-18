@@ -292,26 +292,6 @@ def git_provider():
         )
 
     @asyncio.coroutine
-    def reset_to_head(dir):
-        """
-        Needed to fix line ending issues when commit done from windows: See NCL-3984
-        https://stackoverflow.com/a/29693353/2907906
-        """
-        yield from expect_ok(
-            cmd=["git", "rm", "--cached", "-r", "."],
-            desc="Could not rm --cached properly",
-            cwd=dir,
-            print_cmd=True
-        )
-
-        yield from expect_ok(
-            cmd=["git", "reset", "--hard"],
-            desc="Could not reset properly",
-            cwd=dir,
-            print_cmd=True
-        )
-
-    @asyncio.coroutine
     def commit(dir, commit_message, commit_date=None):
 
         if commit_date:
@@ -546,7 +526,6 @@ def git_provider():
         "clone_checkout_ref_auto": clone_checkout_ref_auto,
         "cleanup": cleanup,
         "set_user_name": set_user_name,
-        "reset_to_head": reset_to_head,
         "contains_untracked": contains_untracked,
         "set_user_email": set_user_email,
         "commit": commit,
