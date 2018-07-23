@@ -12,11 +12,13 @@ def handle_socket(request):
         Request: ws://<link>/ws/<callback_id>
     """
 
+
     callback_id = request.match_info['callback_id']
     ws_obj = web.WebSocketResponse(autoping=True)
 
     yield from ws_obj.prepare(request)
-    yield from websockets.register(callback_id, asyncio.Task.current_task(), ws_obj)
+    print("Sending: " + callback_id)
+    yield from ws_obj.send_str(callback_id)
 
     # Keep websocket alive if client hasn't closed it yet
     while True:
