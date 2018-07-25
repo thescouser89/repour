@@ -1,10 +1,8 @@
 import asyncio
-import logging
 
 from aiohttp import web
 from ... import websockets
 
-logger = logging.getLogger(__name__)
 
 @asyncio.coroutine
 def handle_socket(request):
@@ -19,7 +17,7 @@ def handle_socket(request):
     ws_obj = web.WebSocketResponse(autoping=True)
 
     yield from ws_obj.prepare(request)
-    logger.info("Sending: " + callback_id)
+    print("Sending: " + callback_id)
     yield from ws_obj.send_str(callback_id)
 
     # Keep websocket alive if client hasn't closed it yet
