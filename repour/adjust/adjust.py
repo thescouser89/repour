@@ -5,6 +5,7 @@ import shutil
 
 from . import noop_provider
 from . import pme_provider
+from . import project_manipulator_provider
 from . import process_provider
 from .. import asgit
 from .. import asutil
@@ -176,9 +177,12 @@ def adjust(adjustspec, repo_provider):
 
     result = {}
 
-    # TODO: maybe remove this later?
+    # default value
+    buildType = 'MVN'
+
     if 'buildType' in adjustspec:
         logger.info("Build Type specified: " + adjustspec['buildType'])
+        buildType = adjustspec['buildType']
 
     with asutil.TemporaryDirectory(suffix="git") as work_dir:
 
@@ -204,39 +208,42 @@ def adjust(adjustspec, repo_provider):
             adjust_provider_name = adjust_provider_config.get("provider", None)
             extra_adjust_parameters = adjustspec.get("adjustParameters", {})
 
-            if adjust_provider_name == "noop":
-                yield from noop_provider.get_noop_provider(execution_name) \
-                    (work_dir, extra_adjust_parameters, adjust_result)
+            if buildType == 'MVN':
+                if adjust_provider_name == "noop":
+                    yield from noop_provider.get_noop_provider(execution_name) \
+                        (work_dir, extra_adjust_parameters, adjust_result)
 
-            elif adjust_provider_name == "process":
-                yield from process_provider.get_process_provider(execution_name,
-                                                                 adjust_provider_config["cmd"],
-                                                                 send_log=adjust_provider_config.get("outputToLogs",
-                                                                                                     False)) \
-                    (work_dir, extra_adjust_parameters, adjust_result)
+                elif adjust_provider_name == "process":
+                    yield from process_provider.get_process_provider(execution_name,
+                                                                    adjust_provider_config["cmd"],
+                                                                    send_log=adjust_provider_config.get("outputToLogs",
+                                                                                                        False)) \
+                        (work_dir, extra_adjust_parameters, adjust_result)
 
-            elif adjust_provider_name == "pme":
+                elif adjust_provider_name == "pme":
 
-                temp_build_enabled = yield from is_temp_build(adjustspec)
-                logger.info("Temp build status: " + str(temp_build_enabled))
+                    temp_build_enabled = yield from is_temp_build(adjustspec)
+                    logger.info("Temp build status: " + str(temp_build_enabled))
 
-                specific_indy_group = yield from get_specific_indy_group(adjustspec, adjust_provider_config)
-                timestamp = yield from get_temp_build_timestamp(adjustspec)
-                yield from pme_provider.get_pme_provider(execution_name,
-                                                         adjust_provider_config["cliJarPathAbsolute"],
-                                                         adjust_provider_config.get("defaultParameters", []),
-                                                         adjust_provider_config.get("outputToLogs", False),
-                                                         specific_indy_group, timestamp) \
-                    (work_dir, extra_adjust_parameters, adjust_result)
+                    specific_indy_group = yield from get_specific_indy_group(adjustspec, adjust_provider_config)
+                    timestamp = yield from get_temp_build_timestamp(adjustspec)
+                    yield from pme_provider.get_pme_provider(execution_name,
+                                                            adjust_provider_config["cliJarPathAbsolute"],
+                                                            adjust_provider_config.get("defaultParameters", []),
+                                                            adjust_provider_config.get("outputToLogs", False),
+                                                            specific_indy_group, timestamp) \
+                        (work_dir, extra_adjust_parameters, adjust_result)
 
-                version = yield from pme_provider.get_version_from_pme_result(adjust_result['resultData'])
-                if version:
-                    specific_tag_name = version
+                    version = yield from pme_provider.get_version_from_pme_result(adjust_result['resultData'])
+                    if version:
+                        specific_tag_name = version
 
-            else:
-                raise Exception("Unknown adjust provider \"{adjust_provider_name}\".".format(**locals()))
+                else:
+                    raise Exception("Unknown adjust provider \"{adjust_provider_name}\".".format(**locals()))
 
-            adjust_result["adjustType"].append(execution_name)
+                adjust_result["adjustType"].append(execution_name)
+            elif buildType == 'NPM':
+                yield from project_manipulator_provider                
 
         result = yield from commit_adjustments(
             repo_dir=work_dir,
