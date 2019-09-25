@@ -148,6 +148,9 @@ def adjust(adjustspec, repo_provider):
     """
     specific_tag_name = None
 
+    version = yield from git['version']
+    logger.info("Git version: " + version)
+
     c = yield from config.get_configuration()
 
     adjust_result = {
