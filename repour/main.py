@@ -254,7 +254,12 @@ def configure_logging(default_level, log_path=None, verbose_count=0, quiet_count
         kafka_handler_obj = KafkaLoggingHandler(kafka_server,
                                                 kafka_topic,
                                                 log_preprocess=[adjust_kafka_timestamp],
-                                                ssl_cafile=kafka_cafile)
+                                                ssl_cafile=kafka_cafile,
+                                                kafka_producer_args={
+                                                    'request_timeout_ms': 60000,
+                                                    'max_block_ms': 90000,
+                                                },
+                                                flush_buffer_size=1024)
         root_logger.addHandler(kafka_handler_obj)
 
 
