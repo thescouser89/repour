@@ -116,6 +116,7 @@ def expect_ok_closure(exc_type=exception.CommandError):
         stderr_text = ""
 
         while True:
+            await asyncio.sleep(0.1)
             data = await process.stdout.readline()
             decoded = data.decode()
             if decoded == "":
