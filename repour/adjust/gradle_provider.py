@@ -103,13 +103,24 @@ def get_gradle_provider(
             await git.add_file(
                 work_dir, os.path.join("gradle", "gme-repos.gradle"), force=True
             )
+        (
+            override_group_id,
+            override_artifact_id,
+        ) = await get_extra_param_execution_root_name(extra_adjust_parameters)
 
         adjust_result["adjustType"] = result["adjustType"]
-        adjust_result["resultData"] = result["resultData"]
+        adjust_result["resultData"] = get_result_data(
+            work_dir,
+            extra_parameters,
+            group_id=override_group_id,
+            artifact_id=override_artifact_id,
+        )
 
         return result
 
-    async def get_result_data(work_dir, extra_parameters, results_file=None):
+    async def get_result_data(
+        work_dir, extra_parameters, results_file=None, group_id=None, artifact_id=None
+    ):
         """ Read the manipulation.json file and return it as an object
 
         Format is:
@@ -126,12 +137,6 @@ def get_gradle_provider(
         }
 
         """
-        (
-            override_group_id,
-            override_artifact_id,
-        ) = await pme_provider.get_extra_param_execution_root_name(
-            extra_adjust_parameters
-        )
 
         alignment_report_file_path = os.path.join(work_dir, ALIGNMENT_REPORT_FILE_NAME)
         manipulation_file_path = os.path.join(work_dir, GME_MANIPULATION_FILE_NAME)
@@ -143,18 +148,14 @@ def get_gradle_provider(
                 work_dir,
                 default_parameters,
                 open(file_path).read(),
-                override_group_id,
-                override_artifact_id,
+                group_id,
+                artifact_id,
             )
         else:
             file_path = manipulation_file_path
             logger.info("Reading '{}' file with alignment result".format(file_path))
             return parse_gme_manipulation_json(
-                work_dir,
-                file_path,
-                default_parameters,
-                override_group_id,
-                override_artifact_id,
+                work_dir, file_path, default_parameters, group_id, artifact_id
             )
 
     return adjust
