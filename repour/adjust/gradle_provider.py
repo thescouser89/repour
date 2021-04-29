@@ -106,7 +106,7 @@ def get_gradle_provider(
         (
             override_group_id,
             override_artifact_id,
-        ) = await get_extra_param_execution_root_name(extra_adjust_parameters)
+        ) = await pme_provider.get_extra_param_execution_root_name(extra_adjust_parameters)
 
         adjust_result["adjustType"] = result["adjustType"]
         adjust_result["resultData"] = get_result_data(
