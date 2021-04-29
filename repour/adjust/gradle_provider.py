@@ -109,7 +109,7 @@ def get_gradle_provider(
         ) = await pme_provider.get_extra_param_execution_root_name(extra_adjust_parameters)
 
         adjust_result["adjustType"] = result["adjustType"]
-        adjust_result["resultData"] = get_result_data(
+        adjust_result["resultData"] = await get_result_data(
             work_dir,
             extra_parameters,
             group_id=override_group_id,
