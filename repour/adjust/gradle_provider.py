@@ -143,6 +143,10 @@ def get_gradle_provider(
         alignment_report_file_path = os.path.join(work_dir, ALIGNMENT_REPORT_FILE_NAME)
         manipulation_file_path = os.path.join(work_dir, GME_MANIPULATION_FILE_NAME)
 
+        logger.info("----------------------------------")
+        logger.info(alignment_report_file_path)
+        logger.info(os.path.isfile(alignment_report_file_path))
+        logger.info("----------------------------------")
         if os.path.isfile(alignment_report_file_path):
             file_path = alignment_report_file_path
             logger.info("Reading '{}' file with alignment result".format(file_path))
