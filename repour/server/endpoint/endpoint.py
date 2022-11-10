@@ -104,6 +104,10 @@ def validated_json_endpoint(shutdown_callbacks, validator, coro, repour_url):
         ).strip()
         trace_id = request.headers.get("trace-id", "").strip()
         span_id = request.headers.get("span-id", "").strip()
+        traceparent = request.headers.get("traceparent", "").strip()
+        tracestate = request.headers.get("tracestate", "").strip()
+        logger.info(">> traceparent: " + traceparent)
+        logger.info(">> tracestate: " + tracestate)
         # Some implementations use parent-id instead of span-id
         if span_id == "":
             span_id = request.headers.get("parent-id", "").strip()
