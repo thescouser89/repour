@@ -22,6 +22,7 @@ from repour.lib.io import file_utils
 from repour.lib.logs import log_util
 from repour.lib.logs import file_callback_log
 from repour.server.endpoint import validation
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 logger = logging.getLogger(__name__)
 
@@ -296,7 +297,7 @@ def validated_json_endpoint(shutdown_callbacks, validator, coro, repour_url):
                             ],
                             "trace-id": current_task.mdc["trace_id"],
                             "span-id": current_task.mdc["span_id"],
-                            "traceparent": current_task.mdc["traceparent"]
+                            "traceparent": current_task.mdc["traceparent"],
                         }
 
                         headers.update(context_headers)
@@ -359,23 +360,32 @@ def validated_json_endpoint(shutdown_callbacks, validator, coro, repour_url):
                     **locals()
                 )
             )
-            callback_task = request.app.loop.create_task(do_callback(spec["callback"]))
-            callback_task.log_context = log_context
-            callback_task.loggerName = asyncio.current_task().loggerName
-            callback_task.mdc = asyncio.current_task().mdc
-            callback_task.callback_id = callback_id
-            # Set the task_id if provided in the request
-            task_id = spec.get("taskId", None)
-            if task_id:
-                callback_task.task_id = task_id
 
-            status = 202
-            obj = {
-                "callback": {
-                    "id": callback_id,
-                    "websocket": "ws://" + repour_url + "/callback/" + callback_id,
+            # trying
+            ctx = TraceContextTextMapPropagator().extract(
+                carrier={"traceparent": traceparent}
+            )
+            with tracer.start_as_current_span(request.path, ctx) as span:
+
+                callback_task = request.app.loop.create_task(
+                    do_callback(spec["callback"])
+                )
+                callback_task.log_context = log_context
+                callback_task.loggerName = asyncio.current_task().loggerName
+                callback_task.mdc = asyncio.current_task().mdc
+                callback_task.callback_id = callback_id
+                # Set the task_id if provided in the request
+                task_id = spec.get("taskId", None)
+                if task_id:
+                    callback_task.task_id = task_id
+
+                status = 202
+                obj = {
+                    "callback": {
+                        "id": callback_id,
+                        "websocket": "ws://" + repour_url + "/callback/" + callback_id,
+                    }
                 }
-            }
 
         else:
             status, obj = await do_call()
