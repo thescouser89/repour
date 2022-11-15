@@ -22,6 +22,7 @@ from repour.lib.io import file_utils
 from repour.lib.logs import log_util
 from repour.lib.logs import file_callback_log
 from repour.server.endpoint import validation
+from opentelemetry import trace
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 logger = logging.getLogger(__name__)
@@ -365,6 +366,7 @@ def validated_json_endpoint(shutdown_callbacks, validator, coro, repour_url):
             ctx = TraceContextTextMapPropagator().extract(
                 carrier={"traceparent": traceparent}
             )
+            tracer = trace.get_tracer(__name__)
             with tracer.start_as_current_span(request.path, ctx) as span:
 
                 callback_task = request.app.loop.create_task(
