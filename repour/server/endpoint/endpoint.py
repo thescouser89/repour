@@ -261,8 +261,7 @@ def validated_json_endpoint(shutdown_callbacks, validator, coro, repour_url):
                         ):
 
                             auth_header = {
-                                "Authorization": "Bearer "
-                                + await auth_client.access_token()
+                                "Authorization": None
                             }
                             headers.update(auth_header)
 
