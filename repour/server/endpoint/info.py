@@ -48,6 +48,7 @@ async def handle_version(request):
         git_sha = await git.rev_parse(path_name)
     except exception.CommandError as err:
         logger.error("Error with getting sha: " + str(err))
+        logger.error(str(sys.argv[0]))
         git_sha = "Unknown"
 
     data = {
