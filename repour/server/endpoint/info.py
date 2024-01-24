@@ -3,16 +3,18 @@ import os
 import sys
 
 import json
+import logging
 import repour
 from aiohttp import web
 from prometheus_async.aio import time
 from prometheus_client import Histogram, Summary
-
 from repour import exception
 from repour.lib.scm import git
 
 REQ_TIME = Summary("info_req_time", "time spent with info endpoint")
 REQ_HISTOGRAM_TIME = Histogram("info_req_histogram", "Histogram for info endpoint")
+
+logger = logging.getLogger(__name__)
 
 
 @time(REQ_TIME)
@@ -44,7 +46,8 @@ async def handle_version(request):
     path_name = os.path.dirname(sys.argv[0])
     try:
         git_sha = await git.rev_parse(path_name)
-    except exception.CommandError:
+    except exception.CommandError as err:
+        logger.error("Error with getting sha: " + str(err))
         git_sha = "Unknown"
 
     data = {
